@@ -9,7 +9,7 @@ library(dplyr)
 library(tidyr)
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/JKI PLINK Duplicate Identification/Inputs")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JKI_Inputs")
 
 #Load JKI data and transpose
 JKI <- read.delim("JKI_Samples_Fixed.txt", header = FALSE, stringsAsFactors = FALSE)
@@ -47,14 +47,14 @@ write.table(combined_ped, "JKI_PLINK.ped", sep = "\t", row.names = FALSE, col.na
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/JKI PLINK Duplicate Identification/Inputs")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JKI_Inputs")
 
 #Run PLINK
 system("plink --file JKI_PLINK --missing-genotype 0 --genome full ")
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
-write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/JKI PLINK Duplicate Identification/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/JKI_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
 ##Grouping duplicates
 
@@ -88,8 +88,8 @@ sample_counts <- rowSums(dd[, -1] != " ")
 dd <- add_column(dd, SampleCount = sample_counts, .after = "Group")
 
 #Rename columns
-colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12","ID13","ID14","ID15","ID16","ID17","ID18","ID19","ID20","ID21","ID22")
+colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12")
 
 #Save .csv of duplicate groupings
-write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/JKI PLINK Duplicate Identification/Grouped_Duplicates.csv", row.names = FALSE)
+write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/JKI_Duplicates/Grouped_Duplicates.csv", row.names = FALSE)
 
