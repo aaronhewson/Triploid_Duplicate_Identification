@@ -9,7 +9,7 @@ library(dplyr)
 library(tidyr)
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Larsen_2024")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Larsen_2024")
 
 ##Convert files, format, extract chosen SNPs.
 
@@ -31,7 +31,7 @@ system("plink --bfile Dutch_20K  --update-name Dutch_name.txt --recode tab --out
 rm(list=ls())
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Larsen_2024")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Larsen_2024")
 
 #Load JD_PFR data
 JD_ped <- read.csv("Dutch_JD_PFR.ped", header = FALSE,sep = "\t")
@@ -61,14 +61,14 @@ write.table(combined_ped, "Dutch_PLINK.ped", sep = "\t", row.names = FALSE, col.
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Larsen_2024")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Larsen_2024")
 
 #Run PLINK
 system("plink --file Dutch_PLINK --missing-genotype 0 --genome full ")
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
-write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/20K_480K PLINK Duplicate Identification/Larsen et al. 2024 20K Results/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Larsen_2024_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
 ##Grouping duplicates
 
@@ -102,8 +102,8 @@ sample_counts <- rowSums(dd[, -1] != " ")
 dd <- add_column(dd, SampleCount = sample_counts, .after = "Group")
 
 #Rename columns
-colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12","ID13")
+colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12")
 
 #Save .csv of duplicate groupings
-write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/20K_480K PLINK Duplicate Identification/Larsen et al. 2024 20K Results/Grouped_Duplicates.csv", row.names = FALSE)
+write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Larsen_2024_Duplicates/Grouped_Duplicates.csv", row.names = FALSE)
 
