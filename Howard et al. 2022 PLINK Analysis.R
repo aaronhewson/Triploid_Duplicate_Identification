@@ -10,17 +10,17 @@ library(dplyr)
 library(tidyr)
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Howard_2022")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Howard_2022")
 
 # Initial JD_PFR .ped file curation ---------------------------------------
 #Load .ped file and remove .CEL from sample filenames
 ped <- read.csv("JD_PFR_Raw.ped", header = FALSE,sep = "\t")
 ped[[1]] <- sub("\\.CEL$", "", ped[[1]])
 
-#Remove triploids from .ped file
-ids_to_remove <- read.delim("TriploidSampleNames.txt", header = FALSE, stringsAsFactors = FALSE)
-ids_to_remove <- ids_to_remove$V1
-ped <- ped[!(ped$V1 %in% ids_to_remove), ]
+#Keep triploids only in .ped file
+ids_to_keep <- read.delim("TriploidSampleNames.txt", header = FALSE, stringsAsFactors = FALSE)
+ids_to_keep <- ids_to_keep$V1
+ped <- ped[(ped$V1 %in% ids_to_keep), ]
 
 #Add empty columns for PLINK formatting
 ped <- add_column(ped, Fa = 0, Mo = 0, Se = 0, Ph = 0, .before = "V2" )
@@ -129,14 +129,14 @@ write.table(combined_ped, "Ready_PLINK.ped", sep = "\t", row.names = FALSE, col.
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Howard_2022")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Howard_2022")
 
 #Run PLINK
 system("plink --file Ready_PLINK --missing-genotype 0 --genome full ")
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
-write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/20K_480K PLINK Duplicate Identification/Howard et al. 2022 20K Results/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Howard_2022_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
 ##Grouping duplicates
 
@@ -173,6 +173,6 @@ dd <- add_column(dd, SampleCount = sample_counts, .after = "Group")
 colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12","ID13")
 
 #Save .csv of duplicate groupings
-write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/20K_480K PLINK Duplicate Identification/Howard et al. 2022 20K Results/Grouped_Duplicates.csv", row.names = FALSE)
+write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Howard_2022_Duplicates/Grouped_Duplicates.csv", row.names = FALSE)
 
 
