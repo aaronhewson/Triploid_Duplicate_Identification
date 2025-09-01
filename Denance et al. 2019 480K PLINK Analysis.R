@@ -1,5 +1,5 @@
 #This script integrates 480K SNP data from Denance et al. 2019, with the Jim Dunckley and Plant & Food Research samples to find duplicates with PLINK.
-#The "JD_PFR_All.ped" and "JD_PFR_All.map" from the Howard_2021 analysis are reused; these are filtered for diploids only and have SNP locations added.
+#The "JD_PFR_All.ped" and "JD_PFR_All.map" from the Howard_2022 analysis are reused; these are filtered for triploids only and have SNP locations added.
 
 #Load packages
 library(tibble)
@@ -9,7 +9,7 @@ library(dplyr)
 library(tidyr)
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Denance_2019")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Denance_2019")
 
 #Use PLINK to extract overlapping SNPs from JD and PFR samples
 system("plink --file JD_PFR_All --extract 50K_480K_extract.txt --make-bed --out 480K_JD_PFR")
@@ -28,7 +28,7 @@ system("plink --bfile 480K_Samples --recode tab --out 480K_Samples")
 rm(list=ls())
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Denance_2019")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Denance_2019")
 
 #Load JD_PFR data
 JD_ped <- read.csv("480K_JD_PFR.ped", header = FALSE,sep = "\t")
@@ -58,14 +58,14 @@ write.table(combined_ped, "480K_PLINK.ped", sep = "\t", row.names = FALSE, col.n
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/20K_480K PLINK Duplicate Identification/Inputs/Denance_2019")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Denance_2019")
 
 #Run PLINK
 system("plink --file 480K_PLINK --missing-genotype 0 --genome full ")
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
-write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/20K_480K PLINK Duplicate Identification/480K Results/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Denance_2019_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
 ##Grouping duplicates
 
@@ -99,9 +99,9 @@ sample_counts <- rowSums(dd[, -1] != " ")
 dd <- add_column(dd, SampleCount = sample_counts, .after = "Group")
 
 #Rename columns
-colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12","ID13", "ID14")
+colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12")
 
 #Save .csv of duplicate groupings
-write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/20K_480K PLINK Duplicate Identification/480K Results/Grouped_Duplicates.csv", row.names = FALSE)
+write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Denance_2019_Duplicates/Grouped_Duplicates.csv", row.names = FALSE)
 
 
