@@ -58,8 +58,8 @@ write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Du
 
 ##Grouping duplicates
 
-#Filter for PI_HAT >0.96 (duplicate threshold)
-genome <- genome[!(genome$PI_HAT < 0.96), ]
+#Filter for PI_HAT >0.90 (duplicate threshold)
+genome <- genome[!(genome$PI_HAT < 0.90), ]
 genome <- subset(genome, select = c("IID1","IID2"))
 
 #Group duplicates with igraph
