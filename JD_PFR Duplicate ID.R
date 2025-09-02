@@ -9,7 +9,7 @@ library(dplyr)
 library(tidyr)
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JD_PFR_Inputs")
 
 
 #.ped file curation
@@ -57,7 +57,7 @@ write.table(map, "JD_PFR_PLINK.map", sep = "\t", row.names = FALSE, col.names = 
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JD_PFR_Inputs")
 
 
 #Run PLINK
@@ -67,8 +67,8 @@ system("plink --file JD_PFR_PLINK --missing-genotype 0 --genome full")
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
 write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/JD_PFR Duplicate ID/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
-#Filter for PI_HAT >0.97 (duplicate threshold)
-genome <- genome[!(genome$PI_HAT < 0.96), ]
+#Filter for PI_HAT >0.90 (duplicate threshold)
+genome <- genome[!(genome$PI_HAT < 0.90), ]
 genome <- subset(genome, select = c("IID1","IID2"))
 
 ##Grouping and graphing duplicates
