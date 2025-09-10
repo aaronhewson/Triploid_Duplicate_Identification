@@ -1,6 +1,8 @@
-# This script runs PLINK analysis on output files from Axiom Analysis Suite. 
-# Prior to running PLINK, diploid samples are removed to keep only triploid samples, and SNP chromosome locations are added
+# PLINK duplicate analysis for Jim Dunckley Heritage Orchard and Plant & Food Research samples SNP genotyped in 2025 for Aaron Hewson's MSc project.
+# Prior to running PLINK, diploid samples are removed to keep only triploid samples, and SNP genomic locations are added.
 
+
+# Load Packages -----------------------------------------------------------
 #Load packages
 library(tibble)
 library(igraph)
@@ -8,11 +10,12 @@ library(igraph)
 library(dplyr)
 library(tidyr)
 
+# Set Working Directory ---------------------------------------------------
+
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JD_PFR_Inputs")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JD_PFR_2025")
 
-
-#.ped file curation
+# Format .ped File --------------------------------------------------------
 
 #Load .ped file and remove .CEL from sample filenames
 ped <- read.csv("JD_PFR_Genotyping.ped", header = FALSE,sep = "\t")
@@ -31,7 +34,7 @@ ped <- add_column(ped, Fid = 0, .before = "V1" )
 ped = ped[-1, ]
 write.table(ped, "JD_PFR_PLINK.ped", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-#.map file curation
+# Format .map File --------------------------------------------------------
 
 #Load .map file and BLAST results
 map <- read.csv("JD_PFR_Genotyping.map", header = FALSE, sep ="\t")
@@ -50,18 +53,18 @@ map[map$V1 > 17, c("V1", "V4")] <- 0
 #Save .map file (with locations)
 write.table(map, "JD_PFR_PLINK.map", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-
-##Running PLINK
+# Run PLINK Duplicate Analysis --------------------------------------------
 
 #clear workspace
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JD_PFR_Inputs")
-
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JD_PFR_2025")
 
 #Run PLINK
 system("plink --file JD_PFR_PLINK --missing-genotype 0 --genome full")
+
+# Load and Filter PLINK .genome File --------------------------------------
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
@@ -71,7 +74,7 @@ write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Du
 genome <- genome[!(genome$PI_HAT < 0.90), ]
 genome <- subset(genome, select = c("IID1","IID2"))
 
-##Grouping and graphing duplicates
+# Grouping Duplicate IDs --------------------------------------------------
 
 #Group duplicates with igraph
 graph <- graph_from_data_frame(genome, directed = FALSE)
@@ -103,7 +106,3 @@ colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","I
 
 #Save .csv of duplicate groupings
 write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/JD_PFR Duplicate ID/Grouped_Duplicates.csv", row.names = FALSE)
-
-
-
-
