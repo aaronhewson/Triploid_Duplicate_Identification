@@ -1,4 +1,4 @@
-# PLINK duplicate analysis for Jim Dunckley Orchard/Plant & Food Research samples genotyped in 2025 for Aaron Hewson's MSc project, alongside samples from Howard et al. 2023 ((https://doi.org/10.1002/ppp3.10313).
+# PLINK duplicate analysis for Jim Dunckley Orchard/Plant & Food Research samples genotyped in 2025 for Aaron Hewson's MSc project, alongside samples from Howard et al. 2023 (https://doi.org/10.1002/ppp3.10313).
 # Prior to using this script, Howard et al. 2023 data downloaed as a .xlsx file was formatted in Excel to match PLINK style.
 # Genotype files for JD/PFR are exported from Axiom Analysis Suite with all SNPs present.
 # High-quality SNPS overlapping JD/PFR and Howard et al. 2023 were selected using a list provided by Nick Howard.
