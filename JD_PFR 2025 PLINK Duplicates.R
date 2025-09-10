@@ -64,17 +64,17 @@ setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identi
 #Run PLINK
 system("plink --file JD_PFR_PLINK --missing-genotype 0 --genome full")
 
-# Load and Filter PLINK .genome File --------------------------------------
+# Load and Save PLINK .genome File --------------------------------------
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
 write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/JD_PFR Duplicate ID/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
+# Grouping Duplicate IDs --------------------------------------------------
+
 #Filter for PI_HAT >0.90 (duplicate threshold)
 genome <- genome[!(genome$PI_HAT < 0.90), ]
 genome <- subset(genome, select = c("IID1","IID2"))
-
-# Grouping Duplicate IDs --------------------------------------------------
 
 #Group duplicates with igraph
 graph <- graph_from_data_frame(genome, directed = FALSE)
