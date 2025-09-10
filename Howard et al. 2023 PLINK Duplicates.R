@@ -15,7 +15,7 @@ library(tidyr)
 # Set Working Directory ---------------------------------------------------
 
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Howard_2022")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Howard_2023")
 
 # Initial JD/PFR .ped File Curation ---------------------------------------
 #Load .ped file and remove .CEL from sample filenames
@@ -133,7 +133,7 @@ write.table(combined_ped, "Ready_PLINK.ped", sep = "\t", row.names = FALSE, col.
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Howard_2022")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Howard_2023")
 
 #Run PLINK
 system("plink --file Ready_PLINK --missing-genotype 0 --genome full ")
@@ -142,7 +142,7 @@ system("plink --file Ready_PLINK --missing-genotype 0 --genome full ")
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
-write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Howard_2022_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Howard_2023_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
 
 # Grouping Duplicate IDs --------------------------------------------------
@@ -180,6 +180,6 @@ dd <- add_column(dd, SampleCount = sample_counts, .after = "Group")
 colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12","ID13")
 
 #Save .csv of duplicate groupings
-write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Howard_2022_Duplicates/Grouped_Duplicates.csv", row.names = FALSE)
+write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Howard_2023_Duplicates/Grouped_Duplicates.csv", row.names = FALSE)
 
 
