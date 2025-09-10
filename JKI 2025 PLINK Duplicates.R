@@ -1,5 +1,8 @@
-# This script integrates data from the Julius Kuhn Institute with data from the Jim Dunckley Orchard and Plant & Food Research, to then find duplicates with PLINK.
-# Prior to using this script, JKI data was formatted to match PLINK specifications, but still in need of transposing.
+# PLINK duplicate analysis for Jim Dunckley Orchard/Plant & Food Research samples genotyped in 2025 for Aaron Hewson's MSc project, alongside samples from Julius Kuhn Institute genotyped on 50K SNP array in 2025.
+# Prior to using this script, JKI data provided as .xlsx was formatted in Excel to match PLINK style, and only SNPs selected as "PolyHighRes" in JD/PFR genotyping were kept.
+
+
+# Load Packages -----------------------------------------------------------
 
 #Load packages
 library(tibble)
@@ -8,8 +11,50 @@ library(igraph)
 library(dplyr)
 library(tidyr)
 
+# Set Working Directory ---------------------------------------------------
+
 #Set wd
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JKI_Inputs")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JKI_2025")
+
+# Format JD/PFR .ped File --------------------------------------------------------
+
+#Load .ped file and remove .CEL from sample filenames
+ped <- read.csv("JD_PFR_Genotyping.ped", header = FALSE,sep = "\t")
+ped[[1]] <- sub("\\.CEL$", "", ped[[1]])
+
+#Remove triploids from .ped file
+ids_to_keep <- read.delim("TriploidSampleNames.txt", header = FALSE, stringsAsFactors = FALSE)
+ids_to_keep <- ids_to_keep$V1
+ped <- ped[(ped$V1 %in% ids_to_keep), ]
+
+#Add empty columns for PLINK formatting
+ped <- add_column(ped, Fa = 0, Mo = 0, Se = 0, Ph = 0, .before = "V2" )
+ped <- add_column(ped, Fid = 0, .before = "V1" )
+
+#Remove header row and save .ped file
+ped = ped[-1, ]
+write.table(ped, "JD_PFR_PLINK.ped", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+# Format JD/PFR .map File --------------------------------------------------------
+
+#Load .map file and BLAST results
+map <- read.csv("JD_PFR_Genotyping.map", header = FALSE, sep ="\t")
+BLAST <- read.csv("BLAST results.tsv", header = FALSE, sep = "\t")
+
+#Match Marker IDs
+match_ids <- match(map$V2, BLAST$V2)
+matched <- !is.na(match_ids)
+map[matched, ] <- BLAST[match_ids[matched], ]
+
+#Remove header row, and set any chromosome numbers larger than 17 to 0
+map = map[-1, ]
+map$V1 <- as.numeric(as.character(map$V1))
+map[map$V1 > 17, c("V1", "V4")] <- 0
+
+#Save .map file (with locations)
+write.table(map, "JD_PFR_PLINK.map", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+# Load and Format JKI Samples ---------------------------------------------
 
 #Load JKI data and transpose
 JKI <- read.delim("JKI_Samples_Fixed.txt", header = FALSE, stringsAsFactors = FALSE)
@@ -26,6 +71,8 @@ JKI_t = JKI_t[-1, ]
 colnames(JKI_t) <- NULL
 rownames(JKI_t) <- NULL
 
+# Combine JKI and JD/PFR Samples ------------------------------------------
+
 #Load in PLINK .ped
 ped <- read.csv("JD_PFR_PLINK.ped", header = FALSE,sep = "\t")
 
@@ -41,22 +88,25 @@ write.table(map, "JKI_PLINK.map", sep = "\t", row.names = FALSE, col.names = FAL
 write.table(combined_ped, "JKI_PLINK.ped", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 
-##Running PLINK
+# Run PLINK Duplicate Analysis --------------------------------------------
 
 #clear workspace
 rm(list=ls())
 
 #set working directory [must contain plink.exe and files for analysis]
-setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JKI_Inputs")
+setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/JKI_2025")
 
 #Run PLINK
 system("plink --file JKI_PLINK --missing-genotype 0 --genome full ")
+
+
+# Load and Save PLINK .genome File --------------------------------------
 
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
 write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/JKI_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
-##Grouping duplicates
+# Grouping Duplicate IDs --------------------------------------------------
 
 #Filter for PI_HAT >0.90 (duplicate threshold)
 genome <- genome[!(genome$PI_HAT < 0.90), ]
@@ -92,4 +142,3 @@ colnames(dd) <- c("Group", "SampleCount", "ID1","ID2","ID3","ID4","ID5","ID6","I
 
 #Save .csv of duplicate groupings
 write.csv(dd, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/JKI_Duplicates/Grouped_Duplicates.csv", row.names = FALSE)
-
