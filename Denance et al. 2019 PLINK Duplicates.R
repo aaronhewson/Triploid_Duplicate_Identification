@@ -1,5 +1,8 @@
-#This script integrates 480K SNP data from Denance et al. 2019, with the Jim Dunckley and Plant & Food Research samples to find duplicates with PLINK.
-#The "JD_PFR_All.ped" and "JD_PFR_All.map" from the Howard_2022 analysis are reused; these are filtered for triploids only and have SNP locations added.
+# PLINK duplicate analysis for Jim Dunckley Orchard/Plant & Food Research samples genotyped in 2025 for Aaron Hewson's MSc project, alongside samples from Denance et al. 2019 (https://doi.org/10.15454/IOPGYF).
+# Genotype files for JD/PFR are exported from Axiom Analysis Suite with all SNPs present.
+# High-quality SNPS overlapping JD/PFR and Denance et al. 2019 were selected using a list provided by Nick Howard.
+
+# Load Packages -----------------------------------------------------------
 
 #Load packages
 library(tibble)
@@ -8,21 +11,65 @@ library(igraph)
 library(dplyr)
 library(tidyr)
 
+# Set Working Directory ---------------------------------------------------
+
 #Set wd
 setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Denance_2019")
+
+# Initial JD/PFR .ped file curation ---------------------------------------
+#Load .ped file and remove .CEL from sample filenames
+ped <- read.csv("JD_PFR_Raw.ped", header = FALSE,sep = "\t")
+ped[[1]] <- sub("\\.CEL$", "", ped[[1]])
+
+#Keep triploids only in .ped file
+ids_to_keep <- read.delim("TriploidSampleNames.txt", header = FALSE, stringsAsFactors = FALSE)
+ids_to_keep <- ids_to_keep$V1
+ped <- ped[(ped$V1 %in% ids_to_keep), ]
+
+#Add empty columns for PLINK formatting
+ped <- add_column(ped, Fa = 0, Mo = 0, Se = 0, Ph = 0, .before = "V2" )
+ped <- add_column(ped, Fid = 0, .before = "V1" )
+
+#Remove header row and save .ped file
+ped = ped[-1, ]
+write.table(ped, "JD_PFR_All.ped", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+
+
+
+# Initial JD/PFR .map file curation ---------------------------------------
+
+#Load .map file and BLAST results
+map <- read.csv("JD_PFR_Raw.map", header = FALSE, sep ="\t")
+BLAST <- read.csv("BLAST results.tsv", header = FALSE, sep = "\t")
+
+#Match Marker IDs
+match_ids <- match(map$V2, BLAST$V2)
+matched <- !is.na(match_ids)
+map[matched, ] <- BLAST[match_ids[matched], ]
+
+#Remove header row, and set any chromosome numbers larger than 17 to 0
+map = map[-1, ]
+map$V1 <- as.numeric(as.character(map$V1))
+map[map$V1 > 17, c("V1", "V4")] <- 0
+
+#Save .map file (with locations)
+write.table(map, "JD_PFR_All.map", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+
+# Extract Overlapping SNPs for Samples ------------------------------------
 
 #Use PLINK to extract overlapping SNPs from JD and PFR samples
 system("plink --file JD_PFR_All --extract 50K_480K_extract.txt --make-bed --out 480K_JD_PFR")
 system("plink --bfile 480K_JD_PFR --recode --tab --out 480K_JD_PFR")
 
-#Use PLINK to extract overlapping SNPs from 480K Denance et al. 2019 samples, recode SNP positions, and output as .ped and .map
+#Use PLINK to extract overlapping SNPs from Denance et al. 2019 samples, recode SNP positions, and output as .ped and .map
 system("plink --bfile FruitBreedomics_apple_320K_SNP --extract 50K_480K_extract.txt --recode tab --out 480K_Samples")
 system("plink --file 480K_Samples --update-chr 480K_chr.txt --update-cm 480K_cm.txt --update-map 480K_map.txt --make-bed --out 480K_Samples")
 system("plink --bfile 480K_Samples --recode tab --out 480K_Samples")
 
 
-
-##Combining Denance et al. 2019 480K data with JD_PFR samples
+# Combine Denance et al. 2019 and JD/PFR Samples --------------------------
 
 #clear workspace
 rm(list=ls())
@@ -51,8 +98,7 @@ map <- read.csv("480K_JD_PFR.map", header = FALSE, sep ="\t")
 write.table(map, "480K_PLINK.map", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 write.table(combined_ped, "480K_PLINK.ped", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-
-##Running PLINK Duplicate Analysis
+# Run PLINK Duplicate Analysis --------------------------------------------
 
 #clear workspace
 rm(list=ls())
@@ -63,11 +109,13 @@ setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identi
 #Run PLINK
 system("plink --file 480K_PLINK --missing-genotype 0 --genome full ")
 
+# Load and Save PLINK .genome File ----------------------------------------
+
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
 write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Denance_2019_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
-##Grouping duplicates
+# Grouping Duplicate IDs --------------------------------------------------
 
 #Filter for PI_HAT >0.90 (duplicate threshold)
 genome <- genome[!(genome$PI_HAT < 0.90), ]
