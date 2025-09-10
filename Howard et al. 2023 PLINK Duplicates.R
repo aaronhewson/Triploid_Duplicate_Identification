@@ -1,6 +1,9 @@
-#This script integrates 20K SNP data from Howard et al. 2022, with the Jim Dunckley and Plant & Food Research samples to find duplicates with PLINK.
-#JD_PFR genotype files are re-exported from Axiom to have all SNPs, and the Howard 2022 data formatted as close to PLINK format as possible in Excel first, then saved as .txt.
+# PLINK duplicate analysis for Jim Dunckley Orchard/Plant & Food Research samples genotyped in 2025 for Aaron Hewson's MSc project, alongside samples from Howard et al. 2023 ((https://doi.org/10.1002/ppp3.10313).
+# Prior to using this script, Howard et al. 2023 data downloaed as a .xlsx file was formatted in Excel to match PLINK style.
+# Genotype files for JD/PFR are exported from Axiom Analysis Suite with all SNPs present.
 
+
+# Load Packages -----------------------------------------------------------
 
 #Load packages
 library(tibble)
@@ -9,10 +12,12 @@ library(igraph)
 library(dplyr)
 library(tidyr)
 
+# Set Working Directory ---------------------------------------------------
+
 #Set wd
 setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identification/Inputs/Howard_2022")
 
-# Initial JD_PFR .ped file curation ---------------------------------------
+# Initial JD/PFR .ped File Curation ---------------------------------------
 #Load .ped file and remove .CEL from sample filenames
 ped <- read.csv("JD_PFR_Raw.ped", header = FALSE,sep = "\t")
 ped[[1]] <- sub("\\.CEL$", "", ped[[1]])
@@ -33,7 +38,7 @@ write.table(ped, "JD_PFR_All.ped", sep = "\t", row.names = FALSE, col.names = FA
 
 
 
-# Initial JD_PFR .map file curation ---------------------------------------
+# Initial JD/PFR .map File Curation ---------------------------------------
 
 #Load .map file and BLAST results
 map <- read.csv("JD_PFR_Raw.map", header = FALSE, sep ="\t")
@@ -55,7 +60,7 @@ write.table(map, "JD_PFR_All.map", sep = "\t", row.names = FALSE, col.names = FA
 
 
 
-# Initial Howard .ped file curation ---------------------------------------
+# Initial Howard .ped File Curation ---------------------------------------
 #Load .ped file
 HW_ped <- read.csv("Howard_2022_Raw.ped", header = FALSE,sep = "\t")
 
@@ -71,7 +76,7 @@ write.table(HW_ped, "Howard_All.ped", sep = "\t", row.names = FALSE, col.names =
 
 
 
-# Initial Howard .map file curation ---------------------------------------
+# Initial Howard .map File Curation ---------------------------------------
 
 #Load .map file and BLAST results
 map <- read.csv("Howard_2022_Raw.map", header = FALSE, sep ="\t")
@@ -93,7 +98,6 @@ write.table(map, "Howard_All.map", sep = "\t", row.names = FALSE, col.names = FA
 
 # PLINK formatting --------------------------------------------------------
 
-
 #Use PLINK to extract SNPs and recode alleles for JD_PFR samples
 system("plink --file JD_PFR_All --extract Extract_SNP.txt --update-alleles Recode_50K.txt --make-bed --out JD_PFR_Ready")
 system("plink --bfile JD_PFR_Ready --recode --tab --out JD_PFR_Ready")
@@ -105,7 +109,7 @@ system("plink --bfile Howard_All --extract Extract_SNP.txt  --recode tab --out H
 
 
 
-# Combine JD_PFR and Howard data ------------------------------------------
+# Combine JD/PFR and Howard Samples ------------------------------------------
 
 #Load in JD and Howard .ped files
 JDped <- read.csv("JD_PFR_Ready.ped", header = FALSE,sep = "\t")
@@ -123,7 +127,7 @@ write.table(map, "Ready_PLINK.map", sep = "\t", row.names = FALSE, col.names = F
 write.table(combined_ped, "Ready_PLINK.ped", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 
-# Running PLINK duplicate analysis ----------------------------------------
+# PLINK Duplicate Analysis ----------------------------------------
 
 #clear workspace
 rm(list=ls())
@@ -134,11 +138,14 @@ setwd("C:/Users/curly/Desktop/Apple Genotyping/Methods/Triploid Duplicate Identi
 #Run PLINK
 system("plink --file Ready_PLINK --missing-genotype 0 --genome full ")
 
+# Load and Save PLINK .genome File ----------------------------------------
+
 #Read genome file
 genome <- read.table("plink.genome", header = TRUE, sep = "", stringsAsFactors = FALSE)
 write.table(genome, "C:/Users/curly/Desktop/Apple Genotyping/Results/Triploid Duplicates/Howard_2022_Duplicates/PLINK_results.txt", sep = "\t", row.names = FALSE, quote = FALSE)
 
-##Grouping duplicates
+
+# Grouping Duplicate IDs --------------------------------------------------
 
 #Filter for PI_HAT >0.90 (duplicate threshold)
 genome <- genome[!(genome$PI_HAT < 0.90), ]
